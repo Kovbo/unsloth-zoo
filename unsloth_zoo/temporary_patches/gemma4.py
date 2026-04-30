@@ -118,6 +118,17 @@ class _Gemma4KVSharedSafeProxy:
             )
         return getattr(object.__getattribute__(self, "_real"), name)
 
+    def __setattr__(self, name, value):
+        if name == "_real":
+            object.__setattr__(self, name, value)
+            return
+        if name == "num_kv_shared_layers":
+            raise AttributeError(
+                "num_kv_shared_layers is 0 (no KV sharing) -- hidden from "
+                "the cache constructor to avoid layer_types[:-0] == [] bug"
+            )
+        setattr(object.__getattribute__(self, "_real"), name, value)
+
     def get_text_config(self, decoder=None, encoder=None):
         # If upstream recursively calls get_text_config on the proxy, return
         # self so the proxy is not unwrapped back into a raw config.
